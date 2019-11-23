@@ -1,0 +1,5 @@
+env/
+backend/elm-stuff/
+backend/phonenumber.txt
+backend/testing
+.idea/
