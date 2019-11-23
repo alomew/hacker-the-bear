@@ -1,4 +1,5 @@
 Hacker the Puppy
+
 By Alex, Alfi, Matthew, Ross, Tom
 
 MOTIVATION
@@ -10,6 +11,7 @@ WHAT WE WANT TO ACHIEVE
 Our idea is to create a communication-focused companion to combat loneliness in the elderly, especially those showing early signs of dementia. Many individuals in this category live alone, and therefore have little opportunity to have a conversation. It is possible that this lack of conversation could lead to a deterioration of their memory. Our device should promote a daily conversation that forces the user to interact with the toy, by recounting their activities throughout the day, for example. The Alzheimer’s Society claims that keeping the brain active by doing these sorts of exercises can improve memory.
 
 The device should follow some fundamental aims:
+
     • It should be easy to use
     • It should be follow some basic word triggers to execute commands and respond with one of a list of phrases.
     • It should detect a cry for help, to trigger a correspondence between the user and a family member / emergency services
