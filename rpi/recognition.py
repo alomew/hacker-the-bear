@@ -58,7 +58,5 @@ class SpeechRecognition():
             # Hands the audio to the API for parsing, returning a string of words
         except:
             spokenWords = "." # If no words picked up
-        dict = {'message':spokenWords}
-        jsonFile = json.dumps(dict) # Dumps the text file into a JSON
         self.deleteAudioFiles()
-        return jsonFile
+        return spokenWords
