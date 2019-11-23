@@ -1,0 +1,37 @@
+## We want to retrieve data from the speech-to-text protocol
+
+import pandas as pd
+import numpy as np
+
+class Database:
+
+def __init__(self):
+    self.DB = array(["what", "when", "who", "response"])
+    self.what, self.when, self.who, self.response = [], [], [], []
+
+def receive(self, file):
+    self.file = pd.read_json(file)
+    self.file = array(self.file)
+
+def addglobal(self)
+
+:
+    np.append(self.DB, self.file, axis=0)
+    self.what.append(self.DB[len(self.DB)][0])
+    self.when.append(self.DB[len(self.DB)][1])
+    self.who.append(self.DB[len(self.DB)][2])
+    self.response.append(self.DB[len(self.DB)][3])
+
+def twilio(self):
+    for i in range(0 , len(self.what)):
+        timeStr = self.strftime("%h")
+
+
+
+    # Return how many times the person has used it, show
+    # when they use it, answer to specific questions the bear asks,
+
+if __name__ == "__main__":
+    Database.receive(test.json)
+    Database.addglobal()
+    Database.twilio()
