@@ -19,7 +19,14 @@ The device should follow some fundamental aims:
 
 HOW WE ARE ACHIEVING THIS
 
-Alex and Matt resource a cuddly puppy toy. Matt and Ross proceed to tear apart said toy and insert various components into its stuffing. Meanwhile, Tom is creating a speech-to-text (STT) as well as a TTS protocol for conversation between user and puppy. Alfi looks at how we can store the data in the cloud using mongoDB Atlas and relay information to a Twilio back-end, which Alex is looking into.
+Alex and Matt resource a cuddly puppy toy. Matt and Ross proceed to tear apart said toy and insert various components into its stuffing. Meanwhile, Tom is creating a speech-to-text (STT) as well as a TTS protocol for conversation between user and puppy. Alfi looks at how we can store the data in the cloud and Ross investigates how to relay information to the front end, which Alex is looking into.
+
+Eventually, the device should address the aims by doing the following:
+
+    • Responding to questions asked in plain English
+    • Process the information and save the data in the form {speech detected, timestamp}
+    • Run a function that decides how to respond
+    • Occasionally move in a “cute and endearing fashion”
 
 PROBLEMS WE RAN IN TO
 
