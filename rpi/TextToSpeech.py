@@ -11,3 +11,4 @@ class tts():
 		now = date.today()
 		tts.save("{}.mp3".format(now))
 		os.system("mpg321 {}.mp3".format(now))
+		os.remove("{}.mp3".format(now))
