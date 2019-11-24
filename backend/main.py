@@ -2,30 +2,15 @@ import datetime
 
 from flask import Flask, render_template, jsonify, request
 from google.cloud import datastore
+from rpi.Mitsuku import MitsukuBot
 
 app = Flask(__name__)
 
 
+bot = MitsukuBot()
 
 
 datastore_client = datastore.Client()
-
-def store_time(dt):
-    entity = datastore.Entity(key=datastore_client.key('visit'))
-    entity.update({
-        'timestamp': dt
-    })
-
-    datastore_client.put(entity)
-
-def fetch_times(limit):
-    query = datastore_client.query(kind='visit')
-    query.order = ['-timestamp']
-
-    times = query.fetch(limit=limit)
-
-    return times
-
 
 def store_speech(speech_json):
     entity = datastore.Entity(key=datastore_client.key('speech'))
@@ -71,7 +56,29 @@ def addspeech():
     else:
         return jsonify(False)
 
+@app.route('/textofperson', methods=['POST'])
+def textofperson():
+    json = request.get_json()
+    print(json)
+    #json = {'user_id': "1", 'person_text': 'Hi there', 'timestamp': datetime.datetime.now().isoformat()}
+    if json:
+        try:
+            bear_text = bot.sendMessage(json["person_text"])[1:-1]
+        except:
+            bear_text = "I need some sleep."
+        json['bear_text'] = bear_text
+        return jsonify(json)
 
+    return jsonify({'user_id': '1',
+                    'person_text':'',
+                    'timestamp':datetime.datetime.now().isoformat(),
+                    'bear_text':'You have made a development error.'})
+
+
+
+@app.route('/ping')
+def ping():
+    return jsonify('pong')
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

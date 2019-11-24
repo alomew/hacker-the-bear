@@ -34,6 +34,6 @@ class MitsukuBot():
             for item in data['responses']:
                 result = json.dumps(item)
                 arr.append(result)
-            return arr
+            return arr[0]
         else:
             return ""
