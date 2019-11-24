@@ -105,14 +105,14 @@ def textofperson():
 				
 			if status != 1:
 				bear_text = bot.sendMessage(person_text)[1:-1]
-			else if status ==1:
+			elif status ==1:
 				sosResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
 				bear_text= sosResponse
-			else if status == 2:
+			elif status == 2:
 				badResponse = {"You could try some exercise", "I'm sorry about that, I hope you have a better day tommorrow", "May I reccomend nightline?"}
-			else if status == 3:
+			elif status == 3:
 				needsResponse = {"Try and better your health", "Take some supplemants", "Drink water"}
-			else if status == 4:
+			elif status == 4:
 				badResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
 			else:
 				bear_text = "Do you want some help?"
