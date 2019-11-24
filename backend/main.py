@@ -72,12 +72,12 @@ def textofperson():
 	forgetWords = {"forget", "forgotten"}
 
 
-	memoryRes = {"I'm so glad you remember that","That sounds good, would you like to talk more about it?","Do you remember anything else about the situation"}
-	familyRes = {"That's interesting, tell me more!", "That's great, it's great that you remember", "Oh really?"}
-	happyRes = {"That's awesome! I'm glad", "Yippeee!", "Yay!"}
-	songRes = "" # Songs will play
-	byeRes = {"I need some sleep", "I'm tired", "I ought to go, have a wonderful day!", "Goodnight"}
-	drinkRes = {"Hey, make sure you've been drinking enough.", "Have you been drinking? It's been a while", "Make sure you have a glass of water!"}
+
+
+
+
+
+
 	rand = random.randint(1,100)
 	# If 5 or less, tell them to drink water
 	if json:
@@ -111,23 +111,48 @@ def textofperson():
 					status = 8
 					break
 				
-			if status != 1:
-				bear_text = bot.sendMessage(person_text)[1:-1]
-			elif status ==1:
+			if status ==1:
 				sosResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
-				bear_text= sosResponse
+				bear_text= random.sample(sosResponse,1)[0]
+
 			elif status == 2:
 				badResponse = {"You could try some exercise", "I'm sorry about that, I hope you have a better day tommorrow", "May I reccomend nightline?"}
+				bear_text = random.sample(badResponse,1)[0]
+
 			elif status == 3:
 				needsResponse = {"Try and better your health", "Take some supplemants", "Drink water"}
+				bear_text = random.sample(needsResponse,1)[0]
+
 			elif status == 4:
 				badResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
+				bear_text = random.sample(badResponse,1)[0]
+
+			elif status == 5:
+				memoryRes = {"I'm so glad you remember that","That sounds good, would you like to talk more about it?","Do you remember anything else about the situation"}
+				bear_text = random.sample(memoryRes,1)[0]
+
+			elif status == 6:
+				familyRes = {"That's interesting, tell me more!", "That's great, it's great that you remember", "Oh really?"}
+				bear_text = random.sample(familyRes,1)[0]
+
+			elif status == 7:
+				happyRes = {"That's awesome! I'm glad", "Yippeee!", "Yay!"}
+				bear_text = random.sample(happyRes,1)[0]
+				
+			elif status == 8:
+				songRes = "" # Songs will play
+				bear_text = "Dance time!"
+
 			else:
-				bear_text = "Do you want some help?"
+				bear_text = bot.sendMessage(person_text)[1:-1]
 		except:
+			byeRes = {"I need some sleep", "I'm tired", "I ought to go, have a wonderful day!", "Goodnight"}
 			bear_text = random.sample(byeRes,1)[0]
+
 		if rand < 5:
+			drinkRes = {"Hey, make sure you've been drinking enough.", "Have you been drinking? It's been a while", "Make sure you have a glass of water!"}
 			bear_text += ". " + random.sample(drinkRes,1)[0]
+
 		json['bear_text'] = bear_text
 		return jsonify(json)
 
