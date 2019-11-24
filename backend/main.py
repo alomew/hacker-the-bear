@@ -105,7 +105,7 @@ def set_dancemove(user_id, move):
         poss_ents = list(query.fetch(1))
         if poss_ents:
             e = poss_ents[0]
-            e['dance'] = move
+            e['move'] = move
             datastore_client.put(e)
         else:
             entity = datastore.Entity(key=datastore_client.key("dance"))
