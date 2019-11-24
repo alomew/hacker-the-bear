@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 
 from twilio.rest import Client
 
@@ -52,8 +52,8 @@ def fetch_speeches(limit):
 def fetch_speeches_for_date(d):
     query = datastore_client.query(kind="speech")
     query.order = ['-timestamp']
-    query.add_filter('timestamp', '>=', datetime.combine(d, datetime.time.min))
-    query.add_filter('timestamp', '<=', datetime.combine(d, datetime.time.max))
+    query.add_filter('timestamp', '>=', datetime.combine(d, time.min))
+    query.add_filter('timestamp', '<=', datetime.combine(d, time.max))
     return (list(query.fetch(100)))
 
 
@@ -88,7 +88,7 @@ def message_available(user_id):
         entity = entitylist[0]
         entity['been_said'] = True
         datastore_client.put(entity)
-        return entity['message_text']
+        return entity['message']
     return None
 
 
@@ -98,6 +98,21 @@ def store_summary(user_id, summary):
 
     datastore_client.put(entity)
 
+def set_dancemove(user_id, move):
+    if move in {"Nothing", "Dance", "Wave", "Cuddle", "Neutral"}:
+        query = datastore_client.query(kind='dance')
+        query.add_filter('user_id', '=', user_id)
+        poss_ents = query.fetch(1)
+        if poss_ents:
+            e = poss_ents[0]
+            e['dance'] = move
+            datastore_client.put(e)
+        else:
+            entity = datastore.Entity(key=datastore_client.key("dance"))
+            entity.update({user_id: user_id, move: move})
+            datastore_client.put(entity)
+        return jsonify("Changed move")
+    return jsonify("That's not a real move")
 
 # @app.route('/')
 # def root():
@@ -223,39 +238,39 @@ def textofperson():
             whereAreYou = {"where are you from", "where you from", "where are you at", "where you at", "where are you"}
             howOld = {"how old are you", "what's your age", "whats your age", "how old"}
 
-    if boot:
-        bots = {"I'm simply a husky, Hacker the husky!", "Look at me, I'm a dog!",
-                "Last time I checked, I was indeed a dog!"}
-        bear_text = random.sample(bots, 1)[0]
-        done = True
-        for val in howAreYou:
-            if val in person_text.lower():
-                okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?",
-                            "I'm alright actually. Are you okay?", "Doing well, you?"}
-                bear_text = random.sample(okThanks, 1)[0]
+            if boot:
+                bots = {"I'm simply a husky, Hacker the husky!", "Look at me, I'm a dog!",
+                        "Last time I checked, I was indeed a dog!"}
+                bear_text = random.sample(bots, 1)[0]
                 done = True
-                break
-        for val in whatAreYouDoing:
-            if val in person_text.lower():
-                stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?",
-                         "Just chilling, you?"}
-                bear_text = random.sample(stuff, 1)[0]
-                done = True
-                break
-        for val in whereAreYou:
-            if val in person_text.lower():
-                stuff = {"I've always have been and always will be just here, here with you", "I'll always be by your side",
-                         "Just by your side, exactly where I want to be"}
-                bear_text = random.sample(stuff, 1)[0]
-                done = True
-                break
-    if not done:
-        bear_text = bot.sendMessage(person_text)[1:-1]
+                for val in howAreYou:
+                    if val in person_text.lower():
+                        okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?",
+                                    "I'm alright actually. Are you okay?", "Doing well, you?"}
+                        bear_text = random.sample(okThanks, 1)[0]
+                        done = True
+                        break
+                for val in whatAreYouDoing:
+                    if val in person_text.lower():
+                        stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?",
+                                 "Just chilling, you?"}
+                        bear_text = random.sample(stuff, 1)[0]
+                        done = True
+                        break
+                for val in whereAreYou:
+                    if val in person_text.lower():
+                        stuff = {"I've always have been and always will be just here, here with you", "I'll always be by your side",
+                                 "Just by your side, exactly where I want to be"}
+                        bear_text = random.sample(stuff, 1)[0]
+                        done = True
+                        break
+            if not done:
+                bear_text = bot.sendMessage(person_text)[1:-1]
 
-    if rand < 5:
-        drinkRes = {"Hey, make sure you've been drinking enough.", "Have you been drinking? It's been a while",
-                    "Make sure you have a glass of water!"}
-        bear_text += ". " + random.sample(drinkRes, 1)[0]
+        if rand < 5:
+            drinkRes = {"Hey, make sure you've been drinking enough.", "Have you been drinking? It's been a while",
+                        "Make sure you have a glass of water!"}
+            bear_text += ". " + random.sample(drinkRes, 1)[0]
 
         json['bear_text'] = bear_text
         json['mood_value'] = str(status)
@@ -293,35 +308,28 @@ def ping():
 
 @app.route('/dance')
 def dance():
-    danceMove.setDance(DanceMove.DANCE)
-    return jsonify('done!')
+    return set_dancemove("1", "Dance")
 
 
 @app.route('/wave')
 def wave():
-    danceMove.setDance(DanceMove.WAVE)
-    return jsonify('done!')
+    return set_dancemove("1", "Wave")
 
 
 @app.route('/cuddle')
 def cuddle():
-    danceMove.setDance(DanceMove.CUDDLE)
-    return jsonify('done!')
+    return set_dancemove("1", "Cuddle")
 
 
 @app.route('/DanceMove')
 def getDance():
-    response = "Nothing"
-    if danceMove.DANCE_MOVE == DanceMove.DANCE:
-        response = "Dance"
-    elif danceMove.DANCE_MOVE == DanceMove.WAVE:
-        response = "Wave"
-    elif danceMove.DANCE_MOVE == DanceMove.CUDDLE:
-        response = "Cuddle"
-
-    danceMove.setDance(DanceMove.NOTHING)
-
-    return jsonify(response)
+    query = datastore_client.query(kind='dance')
+    query.add_filter('user_id', '=', '1')
+    poss_ents = list(query.fetch(1))
+    set_dancemove("1", 'Nothing')
+    if poss_ents:
+        return jsonify(poss_ents[0]['move'])
+    return jsonify('Nothing')
 
 
 @app.route('/dailytextfakefakefake')
@@ -332,6 +340,18 @@ def sendsms():
     db = Database()
 
     long, short = db.analysis(timedata, "Alice", moodtoday)
+
+    query = datastore_client.query(kind='summary')
+    query.add_filter('user_id', '=', '1')
+    poss_ents = list(query.fetch(1))
+    if poss_ents:
+        e = poss_ents[0]
+        e['summary_text'] = long
+        datastore_client.put(e)
+    else:
+        e = datastore.Entity(key=datastore_client.key('summary'))
+        e.update({'user_id': '1', 'summary_text': long})
+        datastore_client.put(e)
 
     account_sid = os.environ['TWILIO_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
@@ -344,7 +364,17 @@ def sendsms():
         to='+447730692762'
     )
 
-    print(message.sid)
+    return jsonify(message.sid)
+
+@app.route("/summary")
+def summary():
+    query = datastore_client.query(kind='summary')
+    query.add_filter('user_id', '=', '1')
+    poss_ents = list(query.fetch(1))
+    if poss_ents:
+        return render_template('summary.html', summary_text = poss_ents[0]['summary_text'])
+    else:
+        return render_template('summary.html', summary_text = '')
 
 
 if __name__ == '__main__':

@@ -74,8 +74,10 @@ class Database:
             if inttime <= 5:
                 inttime = 0
             avg = avg + inttime
-
-        return avg//len(temp)
+        if len(temp) > 0:
+            return avg//len(temp)
+        else:
+            return 0
 
     def weeklyconvocompare(self):
         weekly = []
@@ -99,17 +101,20 @@ class Database:
 
     def avgmood(self, mooddata):
         tempmood = []
-        for i in len(mooddata):
+        for i in range(len(mooddata)):
             if mooddata[i] != 0:
                 tempmood.append(mooddata[i])
-        avg = sum(tempmood)/len(tempmood)
-        newavg = "{0:.2f}".format(avg)
-        return newavg
+        if tempmood:
+            avg = sum(tempmood)/len(tempmood)
+        else:
+            avg = 0
+        return avg
 
 
 
     def analysis(self, timefile, user_name, mooddata):
         self.receive(timefile)
+        mooddata = [int(m) for m in mooddata]
         timedens = self.timedens() #List of 24 elements, the number of convos per hour
         weeklycon = self.weeklyconvocompare() #List of 5 elements, the number of convos per day
         weird = self.weirdtimes() #If woken at weird times, can be an empty list
