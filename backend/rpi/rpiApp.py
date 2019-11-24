@@ -1,4 +1,4 @@
-import pyaudio,os
+import pyaudio,os, random
 import speech_recognition as sr
 from datetime import datetime
 import time
@@ -99,7 +99,15 @@ def sendServerMessage(text):
 
 def sendPiMessage(jdata):
 	speech = tts()
-	speech.say(jdata["bear_text"])	
+	data = jdata["bear_text"]
+	songs = {"no", "xp", "gc"}
+	speech.say(data)
+	print(data)
+	if "dance" in data.lower():
+		os.system("mpg321 {}.mp3".format(random.sample(songs,1)[0]))
+	elif "dog" in data.lower() or "husky" in data.lower() or "hacker" in data.lower():
+		os.system("mpg321 Single-yard-dog-woof.mp3")
+	
 
 
 
