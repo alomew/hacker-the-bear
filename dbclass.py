@@ -10,7 +10,7 @@ class Database:
     self.first, self.second, self.third, self.forth, self.fifth = [], [], [], [], []
 
   def receive(self, timefile):
-    self.first, self.second, self.third, self.forth, self.fifth = timefile[0], timefile[1], timefile[2], timefile[3], timefile[4],
+    self.first, self.second, self.third, self.forth, self.fifth = timefile[0], timefile[1], timefile[2], timefile[3], timefile[4]
     self.current = self.first
 
   def timedens(self):
@@ -100,7 +100,18 @@ class Database:
     self.current = self.first
     return weekly
 
-  def analysis(self, timefile, user_name):
+  def avgmood(self, mooddata):
+    tempmood = []
+    for i in len(mooddata):
+      if mooddata[i] != 0:
+        tempmood.append(mooddata[i])
+    avg = sum(temp)/len(temp)
+    newavg = "{0:.2f}".format(avg)
+    return newavg
+    
+
+
+  def analysis(self, timefile, user_name, mooddata):
     self.receive(timefile)
     timedens = self.timedens() #List of 24 elements, the number of convos per hour
     weeklycon = self.weeklyconvocompare() #List of 5 elements, the number of convos per day
@@ -110,7 +121,7 @@ class Database:
     for i in range(len(timedens)):
       if timedens[i] != 0:
         output += str("After {}am they conversed {} times,\n").format(i, timedens[i])
-    output += str("Over the past few days, they've")
+    output += str("Over the past few days, they've ")
     if not self.second:
       output += str("started to get to know Hacker well") 
     else:
@@ -137,4 +148,9 @@ class Database:
     else:
       output += str(" {} pm. ").format(int(avgtime[1])-12)
     output += str("We hope you're enjoying the service, if you have any feedback please reply to this text!")
-    return output
+    mood = self.avgmood(mooddata)
+    if mood <= 4:
+      text = str("It doesn't look like {} had the best day yesterday. We recommend you check up with them, but hopefully you might understand why by clicking the following link. "www.hackerthehuskey.online"").format(user_name)
+    else:
+      text = str("It looks like {} had a pretty good day yesterday, click the following link to understand more. "www.hackerthehuskey.online"").format(user_name)
+    return output, text
