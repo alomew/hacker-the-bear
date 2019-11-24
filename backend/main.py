@@ -4,12 +4,26 @@ from flask import Flask, render_template, jsonify, request
 from google.cloud import datastore
 from rpi.Mitsuku import MitsukuBot
 import random
+from enum import Enum
+
+class DanceMove:
+	
+
+	NOTHING = 0
+	DANCE = 1
+	WAVE = 2
+	CUDDLE = 3
+
+	DANCE_MOVE = NOTHING
+	def setDance(self, move):
+		self.DANCE_MOVE = move
 
 app = Flask(__name__)
 
 
 bot = MitsukuBot()
 
+danceMove = DanceMove()
 
 datastore_client = datastore.Client()
 
@@ -142,6 +156,21 @@ def textofperson():
 def ping():
 	return jsonify('pong')
 
+@app.route('/DanceMove')
+def dance():
+	response = "Nothing"
+	if danceMove.DANCE_MOVE == DanceMove.DANCE:
+		response = "Dance"
+	elif danceMove.DANCE_MOVE == DanceMove.WAVE:
+		response = "Wave"
+	elif danceMove.DANCE_MOVE == DanceMove.CUDDLE:
+		response = "Cuddle"
+	
+	danceMove.setDance(DanceMove.NOTHING)
+	
+	return jsonify(response)
+
+
 if __name__ == '__main__':
 	# This is used when running locally only. When deploying to Google App
 	# Engine, a webserver process such as Gunicorn will serve the app. This
@@ -150,4 +179,7 @@ if __name__ == '__main__':
 	# the "static" directory. See:
 	# http://flask.pocoo.org/docs/1.0/quickstart/#static-files. Once deployed,
 	# App Engine itself will serve those files as configured in app.yaml.
+	global dancemove
+	dancemove = DanceMove.NOTHING
 	app.run(host='127.0.0.1', port=8080, debug=True)
+	
