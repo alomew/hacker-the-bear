@@ -15,7 +15,7 @@ class DanceMove:
 	WAVE = 2
 	CUDDLE = 3
 
-	DANCE_MOVE = NOTHING
+	DANCE_MOVE = WAVE
 	def setDance(self, move):
 		self.DANCE_MOVE = move
 
@@ -269,8 +269,21 @@ def getqueuedmessages():
 def ping():
 	return jsonify('pong')
 
-@app.route('/DanceMove')
+@app.route('/dance')
 def dance():
+	danceMove.setDance(DanceMove.DANCE)
+	return jsonify('done!')
+@app.route('/wave')
+def wave():
+	danceMove.setDance(DanceMove.WAVE)
+	return jsonify('done!')
+@app.route('/cuddle')
+def cuddle():
+	danceMove.setDance(DanceMove.CUDDLE)
+	return jsonify('done!')
+
+@app.route('/DanceMove')
+def getDance():
 	response = "Nothing"
 	if danceMove.DANCE_MOVE == DanceMove.DANCE:
 		response = "Dance"
