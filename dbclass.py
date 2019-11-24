@@ -150,7 +150,7 @@ class Database:
     output += str("We hope you're enjoying the service, if you have any feedback please reply to this text!")
     mood = self.avgmood(mooddata)
     if mood <= 4:
-      text = str("It doesn't look like {} had the best day yesterday. We recommend you check up with them, but hopefully you might understand why by clicking the following link. "www.hackerthehuskey.online"").format(user_name)
+      text = str("It doesn't look like {} had the best day yesterday. We recommend you check up with them, but hopefully you might understand why by clicking the following link. "www.hackerthehuskey.tech"").format(user_name)
     else:
-      text = str("It looks like {} had a pretty good day yesterday, click the following link to understand more. "www.hackerthehuskey.online"").format(user_name)
+      text = str("It looks like {} had a pretty good day yesterday, click the following link to understand more. "www.hackerthehuskey.tech").format(user_name)
     return output, text
