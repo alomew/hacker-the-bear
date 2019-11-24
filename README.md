@@ -8,7 +8,7 @@ Part of Durham County Council’s adult social care services includes improving 
 
 WHAT WE WANT TO ACHIEVE
 
-Our idea is to create a communication-focused companion to combat loneliness in the elderly, especially those showing early signs of dementia. Many individuals in this category live alone, and therefore have little opportunity to have a conversation. It is possible that this lack of conversation could lead to a deterioration of their memory. Our device should promote a daily conversation that forces the user to interact with the toy, by recounting their activities throughout the day, for example. The Alzheimer’s Society claims that keeping the brain active by doing these sorts of exercises can improve memory and retain information for longer.
+Our idea is to create a communication-focused companion to combat loneliness in the elderly, especially those showing early signs of dementia. Many individuals in this category live alone, and therefore have little opportunity to have a conversation. Age UK report that over a million older people say they go over a month without talking to a friend, neighbour, or family member. It is possible that this lack of conversation could lead to a deterioration of their memory. Our device should promote a daily conversation that forces the user to interact with the toy, by recounting their activities throughout the day, for example. The Alzheimer’s Society claims that keeping the brain active by doing these sorts of exercises can improve memory and retain information for longer.
 
 The device should follow some fundamental aims:
 
@@ -39,3 +39,7 @@ Trying to fit the servos into the stuffed toy proved problematic, so a supportiv
 We also abandoned the idea of implementing mongoDB into our database structure in favour of Google’s Cloud platform.
 
 The microphones/speakers we had available to us either wouldn’t connect via Bluetooth or used a 3.5mm jack input which also wasn’t supported on the Raspberry Pi.
+
+Background noise was also an issue the team had to resolve in order for the voice recognition software to work correctly.
+
+Finally, the lag between speech detection and response was initially too large for the interaction to be considered a conversation. Hence, some tweaking was necessary in how the components communicated with each other. This sped up the process dramatically.
