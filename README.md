@@ -1,4 +1,4 @@
-Hacker the Puppy
+Hacker the Husky
 
 By Alex, Alfi, Matthew, Ross, Tom
 
@@ -30,4 +30,12 @@ Eventually, the device should address the aims by doing the following:
 
 PROBLEMS WE RAN IN TO
 
-Initially, we thought we could use the Google Home Mini for the microphone/speakers. However, we realised this would involve using Google’s own speech recognition software, and thus requiring the user to say Google’s start-up command (OK Google). This would then go against one of our key aims which is to make the technology as easy to use as possible, given the target audience.
+Initially, we thought we could use the Google Home Mini for the microphone/speakers. However, we realised this would involve using Google’s own speech recognition software, and thus requiring the user to say Google’s start-up command ("OK Google"). This would then go against one of our key aims which is to make the technology as easy to use as possible, given the target audience.
+
+Another problem we found was that the version of Python that the Raspberry Pi was running didn’t support some of the code, so some updates needed to be made.
+
+Trying to fit the servos into the stuffed toy proved problematic, so a supportive frame had to be fitted inside so that the arms could be made to move. We built the frame out of chopsticks and zip ties.
+
+We also abandoned the idea of implementing mongoDB into our database structure in favour of Google’s Cloud platform.
+
+The microphones/speakers we had available to us either wouldn’t connect via Bluetooth or used a 3.5mm jack input which also wasn’t supported on the Raspberry Pi.
