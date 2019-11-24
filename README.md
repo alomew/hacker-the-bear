@@ -1,6 +1,6 @@
 Hacker the Husky
 
-By Alex, Alfi, Matthew, Ross, Tom
+By Alex, Alfi, Mathew, Ross and Tom
 
 ## Motivation
 
