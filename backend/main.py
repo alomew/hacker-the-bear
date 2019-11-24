@@ -71,19 +71,13 @@ def textofperson():
 	memoryWords = {"remember", "remembered"}
 	forgetWords = {"forget", "forgotten"}
 
-
-
-
-
-
-
-
 	rand = random.randint(1,100)
 	# If 5 or less, tell them to drink water
 	if json:
 		try:
 			person_text = json["person_text"]
 			status = 0
+			bot = False
 			for word in person_text:
 				w = word.lower()
 				if w in sosWords:
@@ -110,6 +104,8 @@ def textofperson():
 				elif w in songWords:
 					status = 8
 					break
+				elif w in {"bot", "human", "husky", "dog", "pet", "baby", "alien", "robot", "machine", "ai"}:
+					bot = True
 				
 			if status ==1:
 				sosResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
@@ -144,9 +140,29 @@ def textofperson():
 				bear_text = "Dance time!"
 
 			else:
-				bear_text = bot.sendMessage(person_text)[1:-1]
+				done = False
+				howAreYou = {"how are you", "how are you doing", "how are you feeling", "you okay"}
+				whatAreYouDoing = {"what are you doing", "what are you up to", "what you doing", "up to much"}
+				if bot:
+					bots = {"I'm simply a husky, Hacker the husky!", "Look at me, I'm a dog!", "Last time I checked, I was indeed a dog!"}
+					bear_text = random.sample(bots,1)[0]
+					done = True
+				for val in howAreYou:
+					if val in bear_text:
+						okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?", "I'm alright actually. Are you okay?", "Doing well, you?"}
+						bear_text = random.sample(okThanks,1)[0]
+						done = True
+						break
+				for val in whatAreYouDoing:
+					if val in bear_text:
+						stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", ""}
+						bear_text = random.sample(stuff,1)[0]
+						done = True
+						break
+				if not done:	
+					bear_text = bot.sendMessage(person_text)[1:-1]
 		except:
-			byeRes = {"I need some sleep", "I'm tired", "I ought to go, have a wonderful day!", "Goodnight"}
+			byeRes = {"I need some sleep", "I'm tired", "I ought to go, have a wonderful day!", "Goodnight", "Good day"}
 			bear_text = random.sample(byeRes,1)[0]
 
 		if rand < 5:
