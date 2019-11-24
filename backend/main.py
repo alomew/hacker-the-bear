@@ -61,9 +61,19 @@ def textofperson():
     json = request.get_json()
     print(json)
     #json = {'user_id': "1", 'person_text': 'Hi there', 'timestamp': datetime.datetime.now().isoformat()}
+	keyWords = {"sad","lonely","unhappy","kill","die","depressed","death","hungry","tired","stiff","pain","aching"}
     if json:
         try:
-            bear_text = bot.sendMessage(json["person_text"])[1:-1]
+			person_text = json["person_text"]
+			bad = False
+			for word in person_text:
+				if word in keyWords:
+					bad = True
+					break
+			if not bad:
+            	bear_text = bot.sendMessage(person_text)[1:-1]
+			else:
+				bear_text = "Do you want some help?"
         except:
             bear_text = "I need some sleep."
         json['bear_text'] = bear_text
