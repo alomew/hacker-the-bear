@@ -5311,15 +5311,15 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$Model = F3(
-	function (user_id, person_text, bear_text) {
-		return {bear_text: bear_text, person_text: person_text, user_id: user_id};
+var $author$project$Main$Model = F5(
+	function (message, queuedMessages, summary, name, user_id) {
+		return {message: message, name: name, queuedMessages: queuedMessages, summary: summary, user_id: user_id};
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		A3($author$project$Main$Model, '', '', ''),
+		A5($author$project$Main$Model, '', _List_Nil, '', '', '1'),
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5327,9 +5327,14 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Main$Received = function (a) {
-	return {$: 'Received', a: a};
+var $author$project$Main$Message = F3(
+	function (message, name, user_id) {
+		return {message: message, name: name, user_id: user_id};
+	});
+var $author$project$Main$ReceivedSubmitStatus = function (a) {
+	return {$: 'ReceivedSubmitStatus', a: a};
 };
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5344,21 +5349,22 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			pairs));
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Main$encodeModel = function (model) {
+var $author$project$Main$encodeMessage = function (message) {
 	return $elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
+				'message',
+				$elm$json$Json$Encode$string(message.message)),
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(message.name)),
+				_Utils_Tuple2(
 				'user_id',
-				$elm$json$Json$Encode$string(model.user_id)),
-				_Utils_Tuple2(
-				'person_text',
-				$elm$json$Json$Encode$string(model.person_text)),
-				_Utils_Tuple2(
-				'bear_text',
-				$elm$json$Json$Encode$string(model.bear_text))
+				$elm$json$Json$Encode$string(message.user_id))
 			]));
 };
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -5906,13 +5912,24 @@ var $elm$core$Basics$composeR = F3(
 		return g(
 			f(x));
 	});
-var $elm$http$Http$expectBytesResponse = F2(
+var $elm$http$Http$expectStringResponse = F2(
 	function (toMsg, toResult) {
 		return A3(
 			_Http_expect,
-			'arraybuffer',
-			_Http_toDataView,
+			'',
+			$elm$core$Basics$identity,
 			A2($elm$core$Basics$composeR, toResult, toMsg));
+	});
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
 	});
 var $elm$http$Http$BadBody = function (a) {
 	return {$: 'BadBody', a: a};
@@ -5925,17 +5942,6 @@ var $elm$http$Http$BadUrl = function (a) {
 };
 var $elm$http$Http$NetworkError = {$: 'NetworkError'};
 var $elm$http$Http$Timeout = {$: 'Timeout'};
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
 var $elm$http$Http$resolve = F2(
 	function (toResult, response) {
 		switch (response.$) {
@@ -5959,15 +5965,19 @@ var $elm$http$Http$resolve = F2(
 					toResult(body));
 		}
 	});
-var $elm$http$Http$expectWhatever = function (toMsg) {
-	return A2(
-		$elm$http$Http$expectBytesResponse,
-		toMsg,
-		$elm$http$Http$resolve(
-			function (_v0) {
-				return $elm$core$Result$Ok(_Utils_Tuple0);
-			}));
-};
+var $elm$http$Http$expectJson = F2(
+	function (toMsg, decoder) {
+		return A2(
+			$elm$http$Http$expectStringResponse,
+			toMsg,
+			$elm$http$Http$resolve(
+				function (string) {
+					return A2(
+						$elm$core$Result$mapError,
+						$elm$json$Json$Decode$errorToString,
+						A2($elm$json$Json$Decode$decodeString, decoder, string));
+				}));
+	});
 var $elm$http$Http$jsonBody = function (value) {
 	return A2(
 		_Http_pair,
@@ -6149,50 +6159,43 @@ var $elm$http$Http$post = function (r) {
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'UpdatedId':
-				var newId = msg.a;
+			case 'UpdatedMessage':
+				var s = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{user_id: newId}),
+						{message: s}),
 					$elm$core$Platform$Cmd$none);
-			case 'UpdatedPersonText':
-				var newText = msg.a;
+			case 'UpdatedName':
+				var s = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{person_text: newText}),
-					$elm$core$Platform$Cmd$none);
-			case 'UpdatedChatText':
-				var newText = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{bear_text: newText}),
+						{name: s}),
 					$elm$core$Platform$Cmd$none);
 			case 'Submitted':
 				return _Utils_Tuple2(
-					A3($author$project$Main$Model, '', '', ''),
+					_Utils_update(
+						model,
+						{
+							message: '',
+							queuedMessages: A2($elm$core$List$cons, model.message, model.queuedMessages)
+						}),
 					$elm$http$Http$post(
 						{
 							body: $elm$http$Http$jsonBody(
-								$author$project$Main$encodeModel(model)),
-							expect: $elm$http$Http$expectWhatever($author$project$Main$Received),
-							url: '/addspeech'
+								$author$project$Main$encodeMessage(
+									A3($author$project$Main$Message, model.message, model.name, model.user_id))),
+							expect: A2($elm$http$Http$expectJson, $author$project$Main$ReceivedSubmitStatus, $elm$json$Json$Decode$bool),
+							url: '/newmessage'
 						}));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$Submitted = {$: 'Submitted'};
-var $author$project$Main$UpdatedChatText = function (a) {
-	return {$: 'UpdatedChatText', a: a};
-};
-var $author$project$Main$UpdatedId = function (a) {
-	return {$: 'UpdatedId', a: a};
-};
-var $author$project$Main$UpdatedPersonText = function (a) {
-	return {$: 'UpdatedPersonText', a: a};
+var $author$project$Main$UpdatedMessage = function (a) {
+	return {$: 'UpdatedMessage', a: a};
 };
 var $mdgriffith$elm_ui$Internal$Model$Attr = function (a) {
 	return {$: 'Attr', a: a};
@@ -11729,6 +11732,11 @@ var $mdgriffith$elm_ui$Element$Input$button = F2(
 				_List_fromArray(
 					[label])));
 	});
+var $mdgriffith$elm_ui$Internal$Model$AlignX = function (a) {
+	return {$: 'AlignX', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$CenterX = {$: 'CenterX'};
+var $mdgriffith$elm_ui$Element$centerX = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$CenterX);
 var $mdgriffith$elm_ui$Internal$Model$AsColumn = {$: 'AsColumn'};
 var $mdgriffith$elm_ui$Internal$Model$asColumn = $mdgriffith$elm_ui$Internal$Model$AsColumn;
 var $mdgriffith$elm_ui$Element$column = F2(
@@ -11749,12 +11757,29 @@ var $mdgriffith$elm_ui$Element$column = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
+var $mdgriffith$elm_ui$Element$el = F2(
+	function (attrs, child) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asEl,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+					attrs)),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[child])));
+	});
+var $mdgriffith$elm_ui$Element$Input$Above = {$: 'Above'};
 var $mdgriffith$elm_ui$Element$Input$Label = F3(
 	function (a, b, c) {
 		return {$: 'Label', a: a, b: b, c: c};
 	});
-var $mdgriffith$elm_ui$Element$Input$OnLeft = {$: 'OnLeft'};
-var $mdgriffith$elm_ui$Element$Input$labelLeft = $mdgriffith$elm_ui$Element$Input$Label($mdgriffith$elm_ui$Element$Input$OnLeft);
+var $mdgriffith$elm_ui$Element$Input$labelAbove = $mdgriffith$elm_ui$Element$Input$Label($mdgriffith$elm_ui$Element$Input$Above);
 var $mdgriffith$elm_ui$Internal$Model$OnlyDynamic = F2(
 	function (a, b) {
 		return {$: 'OnlyDynamic', a: a, b: b};
@@ -12032,6 +12057,48 @@ var $mdgriffith$elm_ui$Element$layoutWith = F3(
 	});
 var $mdgriffith$elm_ui$Element$layout = $mdgriffith$elm_ui$Element$layoutWith(
 	{options: _List_Nil});
+var $mdgriffith$elm_ui$Internal$Model$PaddingStyle = F5(
+	function (a, b, c, d, e) {
+		return {$: 'PaddingStyle', a: a, b: b, c: c, d: d, e: e};
+	});
+var $mdgriffith$elm_ui$Internal$Flag$padding = $mdgriffith$elm_ui$Internal$Flag$flag(2);
+var $mdgriffith$elm_ui$Element$padding = function (x) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$padding,
+		A5(
+			$mdgriffith$elm_ui$Internal$Model$PaddingStyle,
+			'p-' + $elm$core$String$fromInt(x),
+			x,
+			x,
+			x,
+			x));
+};
+var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontSize,
+		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var $mdgriffith$elm_ui$Internal$Model$SpacingStyle = F3(
+	function (a, b, c) {
+		return {$: 'SpacingStyle', a: a, b: b, c: c};
+	});
+var $mdgriffith$elm_ui$Internal$Flag$spacing = $mdgriffith$elm_ui$Internal$Flag$flag(3);
+var $mdgriffith$elm_ui$Internal$Model$spacingName = F2(
+	function (x, y) {
+		return 'spacing-' + ($elm$core$String$fromInt(x) + ('-' + $elm$core$String$fromInt(y)));
+	});
+var $mdgriffith$elm_ui$Element$spacing = function (x) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$spacing,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$SpacingStyle,
+			A2($mdgriffith$elm_ui$Internal$Model$spacingName, x, x),
+			x,
+			x));
+};
 var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 	return {$: 'Text', a: a};
 };
@@ -12198,11 +12265,6 @@ var $mdgriffith$elm_ui$Element$rgb = F3(
 		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, r, g, b, 1);
 	});
 var $mdgriffith$elm_ui$Element$Input$darkGrey = A3($mdgriffith$elm_ui$Element$rgb, 186 / 255, 189 / 255, 182 / 255);
-var $mdgriffith$elm_ui$Internal$Model$PaddingStyle = F5(
-	function (a, b, c, d, e) {
-		return {$: 'PaddingStyle', a: a, b: b, c: c, d: d, e: e};
-	});
-var $mdgriffith$elm_ui$Internal$Flag$padding = $mdgriffith$elm_ui$Internal$Flag$flag(2);
 var $mdgriffith$elm_ui$Element$paddingXY = F2(
 	function (x, y) {
 		return _Utils_eq(x, y) ? A2(
@@ -12240,25 +12302,6 @@ var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 			'br-' + $elm$core$String$fromInt(radius),
 			'border-radius',
 			$elm$core$String$fromInt(radius) + 'px'));
-};
-var $mdgriffith$elm_ui$Internal$Model$SpacingStyle = F3(
-	function (a, b, c) {
-		return {$: 'SpacingStyle', a: a, b: b, c: c};
-	});
-var $mdgriffith$elm_ui$Internal$Flag$spacing = $mdgriffith$elm_ui$Internal$Flag$flag(3);
-var $mdgriffith$elm_ui$Internal$Model$spacingName = F2(
-	function (x, y) {
-		return 'spacing-' + ($elm$core$String$fromInt(x) + ('-' + $elm$core$String$fromInt(y)));
-	});
-var $mdgriffith$elm_ui$Element$spacing = function (x) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$spacing,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$SpacingStyle,
-			A2($mdgriffith$elm_ui$Internal$Model$spacingName, x, x),
-			x,
-			x));
 };
 var $mdgriffith$elm_ui$Element$Input$white = A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1);
 var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
@@ -12717,23 +12760,6 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $mdgriffith$elm_ui$Element$el = F2(
-	function (attrs, child) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asEl,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-					attrs)),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
-				_List_fromArray(
-					[child])));
-	});
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
 var $mdgriffith$elm_ui$Element$Input$renderPlaceholder = F3(
 	function (_v0, forPlaceholder, on) {
@@ -13030,48 +13056,60 @@ var $author$project$Main$view = function (model) {
 		_List_Nil,
 		A2(
 			$mdgriffith$elm_ui$Element$column,
-			_List_Nil,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$centerX,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					$mdgriffith$elm_ui$Element$spacing(15)
+				]),
 			_List_fromArray(
 				[
 					A2(
-					$mdgriffith$elm_ui$Element$Input$text,
-					_List_Nil,
-					{
-						label: A2(
-							$mdgriffith$elm_ui$Element$Input$labelLeft,
-							_List_Nil,
-							$mdgriffith$elm_ui$Element$text('ID')),
-						onChange: $author$project$Main$UpdatedId,
-						placeholder: $elm$core$Maybe$Nothing,
-						text: model.user_id
-					}),
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$Font$size(25),
+							$mdgriffith$elm_ui$Element$centerX,
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+							$mdgriffith$elm_ui$Element$padding(10)
+						]),
+					$mdgriffith$elm_ui$Element$text('Messages so far')),
+					A2(
+					$mdgriffith$elm_ui$Element$column,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$centerX,
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink)
+						]),
+					A2(
+						$elm$core$List$map,
+						function (m) {
+							return $mdgriffith$elm_ui$Element$text(m);
+						},
+						model.queuedMessages)),
 					A2(
 					$mdgriffith$elm_ui$Element$Input$text,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$centerX,
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink)
+						]),
 					{
 						label: A2(
-							$mdgriffith$elm_ui$Element$Input$labelLeft,
+							$mdgriffith$elm_ui$Element$Input$labelAbove,
 							_List_Nil,
-							$mdgriffith$elm_ui$Element$text('Person Text')),
-						onChange: $author$project$Main$UpdatedPersonText,
+							$mdgriffith$elm_ui$Element$text('New message')),
+						onChange: $author$project$Main$UpdatedMessage,
 						placeholder: $elm$core$Maybe$Nothing,
-						text: model.person_text
-					}),
-					A2(
-					$mdgriffith$elm_ui$Element$Input$text,
-					_List_Nil,
-					{
-						label: A2(
-							$mdgriffith$elm_ui$Element$Input$labelLeft,
-							_List_Nil,
-							$mdgriffith$elm_ui$Element$text('Bear text')),
-						onChange: $author$project$Main$UpdatedChatText,
-						placeholder: $elm$core$Maybe$Nothing,
-						text: model.bear_text
+						text: model.message
 					}),
 					A2(
 					$mdgriffith$elm_ui$Element$Input$button,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$centerX,
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink)
+						]),
 					{
 						label: $mdgriffith$elm_ui$Element$text('Submit'),
 						onPress: $elm$core$Maybe$Just($author$project$Main$Submitted)

@@ -43,6 +43,38 @@ def fetch_speeches(limit):
 
 	return speeches
 
+def store_message(message_json):
+	message_json['been_said'] = False
+	entity = datastore.Entity(key=datastore_client.key('message'))
+	entity.update(message_json)
+
+	datastore_client.put(entity)
+
+def room_for_messages(user_id):
+	query = datastore_client.query(kind='message')
+	query.add_filter('been_said', '=', False)
+	query.add_filter('user_id', '=', user_id)
+	num = len(list(query.fetch(10)))
+	if num == 10:
+		return False
+	else:
+		return True
+
+
+def message_available(user_id, name):
+	query = datastore_client.query(kind='message')
+	query.add_filter('user_id', '=', user_id)
+	query.add_filter('user_id', '=', name)
+	query.add_filter('been_said', '=', False)
+
+	entitylist = list(query.fetch(1))
+	if entitylist:
+		entity = entitylist[0]
+		entity['been_said'] = True
+		datastore_client.put(entity)
+		return entity['message_text']
+	return None
+
 # @app.route('/')
 # def root():
 #     # Store the current access time in Datastore.
@@ -66,8 +98,10 @@ def fetchspeeches():
 def addspeech():
 	json = request.get_json()
 	if json:
-		store_speech(json)
-		return jsonify(True)
+		if room_for_messages(json['user_id']):
+			store_speech(json)
+			return jsonify(True)
+		return jsonify(False)
 	else:
 		return jsonify(False)
 
@@ -76,7 +110,7 @@ def textofperson():
 	json = request.get_json()
 	print(json)
 	#json = {'user_id': "1", 'person_text': 'Hi there', 'timestamp': datetime.datetime.now().isoformat()}
-	badWords = {"sad","lonely","unhappy","kill","die", "leave", "depressed","death","hungry","tired","stiff","aching", "miss"}
+	badWords = {"sad","lonely","unhappy","kill","die", "leave", "depressed","death","stiff","aching", "miss"}
 	sosWords = {"fallen", "hurt", "injured", "broken", "pain", "ouch", "help", "stroke", "heart", "attack"}
 	happyWords = {"happy", "excited", "nice", "sunny"}
 	needWords = {"hungry", "thirsty", "tired", "exhausted", "sleepy"}
@@ -89,95 +123,100 @@ def textofperson():
 	# If 5 or less, tell them to drink water
 	if json:
 		try:
+			bear_text = ""
 			person_text = json["person_text"]
-			status = 0
-			bot = False
-			for word in person_text:
-				w = word.lower()
-				if w in sosWords:
-					status = 1
-					break
-				elif w in badWords:
-					status = 2
-					break
-				elif w in needWords:
-					status = 3
-					break
-				elif w in forgetWords:
-					status = 4
-					break
-				elif w in memoryWords:
-					status = 5
-					break
-				elif w in familyWords:
-					status = 6
-					break
-				elif w in happyWords:
-					status = 7
-					break
-				elif w in songWords:
-					status = 8
-					break
-				elif w in {"bot", "human", "husky", "dog", "pet", "baby", "alien", "robot", "machine", "ai"}:
-					bot = True
-				
-			if status ==1:
-				sosResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
-				bear_text= random.sample(sosResponse,1)[0]
+		except Exception as e:
+			# byeRes = {"I need some sleep", "I'm tired", "I ought to go, have a wonderful day!", "Goodnight", "Good day"}
+			# bear_text = random.sample(byeRes,1)[0]
+			bear_text = (str(e))
+			json['bear_text'] = bear_text
+			return jsonify(json)
+		status = 0
+		boot = False
+		for word in person_text.split(' '):
+			w = word.lower()
+			if w in sosWords:
+				status = 1
+				break
+			elif w in badWords:
+				status = 2
+				break
+			elif w in needWords:
+				status = 3
+				break
+			elif w in forgetWords:
+				status = 4
+				break
+			elif w in memoryWords:
+				status = 5
+				break
+			elif w in familyWords:
+				status = 6
+				break
+			elif w in happyWords:
+				status = 7
+				break
+			elif w in songWords:
+				status = 8
+				break
+			elif w in {"bot", "human", "husky", "dog", "pet", "baby", "alien", "robot", "machine", "ai"}:
+				boot = True
 
-			elif status == 2:
-				badResponse = {"You could try some exercise", "I'm sorry about that, I hope you have a better day tommorrow", "May I reccomend nightline?"}
-				bear_text = random.sample(badResponse,1)[0]
+		if status ==1:
+			sosResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
+			bear_text= random.sample(sosResponse,1)[0]
 
-			elif status == 3:
-				needsResponse = {"Try and better your health", "Take some supplemants", "Drink water"}
-				bear_text = random.sample(needsResponse,1)[0]
+		elif status == 2:
+			badResponse = {"You could try some exercise", "I'm sorry about that, I hope you have a better day tommorrow", "May I reccomend nightline?"}
+			bear_text = random.sample(badResponse,1)[0]
 
-			elif status == 4:
-				badResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
-				bear_text = random.sample(badResponse,1)[0]
+		elif status == 3:
+			needsResponse = {"Try and better your health", "Take some supplemants", "Drink water"}
+			bear_text = random.sample(needsResponse,1)[0]
 
-			elif status == 5:
-				memoryRes = {"I'm so glad you remember that","That sounds good, would you like to talk more about it?","Do you remember anything else about the situation"}
-				bear_text = random.sample(memoryRes,1)[0]
+		elif status == 4:
+			badResponse = {"Wait there, I am sending help!", "Lie in the recovery position", "Please call the police"}
+			bear_text = random.sample(badResponse,1)[0]
 
-			elif status == 6:
-				familyRes = {"That's interesting, tell me more!", "That's great, it's great that you remember", "Oh really?"}
-				bear_text = random.sample(familyRes,1)[0]
+		elif status == 5:
+			memoryRes = {"I'm so glad you remember that","That sounds good, would you like to talk more about it?","Do you remember anything else about the situation"}
+			bear_text = random.sample(memoryRes,1)[0]
 
-			elif status == 7:
-				happyRes = {"That's awesome! I'm glad", "Yippeee!", "Yay!"}
-				bear_text = random.sample(happyRes,1)[0]
-				
-			elif status == 8:
-				songRes = "" # Songs will play
-				bear_text = "Dance time!"
+		elif status == 6:
+			familyRes = {"That's interesting, tell me more!", "That's great, it's great that you remember", "Oh really?"}
+			bear_text = random.sample(familyRes,1)[0]
 
-			else:
-				done = False
-				howAreYou = {"how are you", "how are you doing", "how are you feeling", "you okay"}
-				whatAreYouDoing = {"what are you doing", "what are you up to", "what you doing", "up to much"}
-				if bot:
-					bots = {"I'm simply a husky, Hacker the husky!", "Look at me, I'm a dog!", "Last time I checked, I was indeed a dog!"}
-					bear_text = random.sample(bots,1)[0]
+		elif status == 7:
+			happyRes = {"That's awesome! I'm glad", "Yippeee!", "Yay!"}
+			bear_text = random.sample(happyRes,1)[0]
+
+		elif status == 8:
+			songRes = "" # Songs will play
+			bear_text = "Dance time!"
+
+		else:
+			done = False
+			howAreYou = {"how are you", "how are you doing", "how are you feeling", "you okay"}
+			whatAreYouDoing = {"what are you doing", "what are you up to", "what you doing", "up to much"}
+			if boot:
+				bots = {"I'm simply a husky, Hacker the husky!", "Look at me, I'm a dog!", "Last time I checked, I was indeed a dog!"}
+				bear_text = random.sample(bots,1)[0]
+				done = True
+			for val in howAreYou:
+				if val in bear_text:
+					okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?", "I'm alright actually. Are you okay?", "Doing well, you?"}
+					bear_text = random.sample(okThanks,1)[0]
 					done = True
-				for val in howAreYou:
-					if val in bear_text:
-						okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?", "I'm alright actually. Are you okay?", "Doing well, you?"}
-						bear_text = random.sample(okThanks,1)[0]
-						done = True
-						break
-				for val in whatAreYouDoing:
-					if val in bear_text:
-						stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", "Just chilling, you?"}
-						bear_text = random.sample(stuff,1)[0]
-						done = True
-						break
-				if not done:	
-					bear_text = bot.sendMessage(person_text)[1:-1]
-		except:
-			byeRes = {"I need some sleep", "I'm tired", "I ought to go, have a wonderful day!", "Goodnight", "Good day"}
-			bear_text = random.sample(byeRes,1)[0]
+					break
+			for val in whatAreYouDoing:
+				if val in bear_text:
+					stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", "Just chilling, you?"}
+					bear_text = random.sample(stuff,1)[0]
+					done = True
+					break
+			if not done:
+				bear_text = bot.sendMessage(person_text)[1:-1]
+
 
 		if rand < 5:
 			drinkRes = {"Hey, make sure you've been drinking enough.", "Have you been drinking? It's been a while", "Make sure you have a glass of water!"}
@@ -191,6 +230,14 @@ def textofperson():
 					'timestamp':datetime.datetime.now().isoformat(),
 					'bear_text':'You have made a development error.'})
 
+
+@app.route('/newmessage', methods=['POST'])
+def newmessage():
+	json = request.get_json()
+	if json and room_for_messages(json['user_id']):
+		store_message(json)
+		return jsonify(True)
+	return jsonify(False)
 
 
 @app.route('/ping')
