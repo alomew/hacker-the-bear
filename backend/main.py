@@ -155,7 +155,7 @@ def textofperson():
 						break
 				for val in whatAreYouDoing:
 					if val in bear_text:
-						stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", ""}
+						stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", "Just chilling, you?"}
 						bear_text = random.sample(stuff,1)[0]
 						done = True
 						break
