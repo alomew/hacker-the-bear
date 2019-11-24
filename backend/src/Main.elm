@@ -6,6 +6,7 @@ import Element.Font
 import Element.Input exposing (labelAbove, labelHidden, labelLeft)
 import Html exposing (Html)
 import Http
+import Json.Decode exposing (Decoder)
 import Json.Encode
 
 
@@ -14,7 +15,20 @@ main =
 
 
 type alias Model =
-    { message : String, queuedMessages : List String, summary : String }
+    { message : String, queuedMessages : List String, summary : String, name : String, user_id : String }
+
+
+type alias Message =
+    { message : String, name : String, user_id : String }
+
+
+encodeMessage : Message -> Json.Encode.Value
+encodeMessage message =
+    Json.Encode.object <|
+        [ ( "message", Json.Encode.string message.message )
+        , ( "name", Json.Encode.string message.name )
+        , ( "user_id", Json.Encode.string message.user_id )
+        ]
 
 
 encodeModel : Model -> Json.Encode.Value
@@ -26,13 +40,14 @@ encodeModel model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model "" [] "", Cmd.none )
+    ( Model "" [] "" "" "1", Cmd.none )
 
 
 type Msg
     = UpdatedMessage String
+    | UpdatedName String
     | Submitted
-    | Received (Result Http.Error ())
+    | ReceivedSubmitStatus (Result Http.Error Bool)
 
 
 subscriptions _ =
@@ -45,13 +60,20 @@ update msg model =
         UpdatedMessage s ->
             ( { model | message = s }, Cmd.none )
 
+        UpdatedName s ->
+            ( { model | name = s }, Cmd.none )
+
         Submitted ->
             ( { model | message = "", queuedMessages = model.message :: model.queuedMessages }
-            , Cmd.none
+            , Http.post
+                { url = "/newmessage"
+                , body = Http.jsonBody <| encodeMessage <| Message model.message model.name model.user_id
+                , expect = Http.expectJson ReceivedSubmitStatus Json.Decode.bool
+                }
             )
 
         -- Http.post { url = "/addspeech", body = Http.jsonBody <| encodeModel model, expect = Http.expectWhatever Received})
-        Received _ ->
+        ReceivedSubmitStatus _ ->
             ( model, Cmd.none )
 
 

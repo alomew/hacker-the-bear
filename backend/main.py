@@ -29,6 +29,37 @@ def fetch_speeches(limit):
 
 	return speeches
 
+def store_message(message_json):
+	message_json['been_said'] = False
+	entity = datastore.Entity(key=datastore_client.key('message'))
+	entity.update(message_json)
+
+	datastore_client.put(entity)
+
+def room_for_messages(user_id):
+	query = datastore_client.query(kind='message')
+	query.add_filter('been_said', '=', False)
+	query.add_filter('user_id', '=', user_id)
+	num = len(list(query.fetch(10)))
+	if num == 10:
+		return False
+	else:
+		return True
+
+
+def message_available(user_id, name):
+	query = datastore_client.query(kind='message')
+	query.add_filter('message_giver', '=', name)
+	query.add_filter('user_id', '=', user_id)
+	query.add_filter('been_said', '=', False)
+
+	entity = list(query.fetch(1))
+	if entity:
+		entity['been_said'] = True
+		datastore_client.put(entity)
+		return entity['message_text']
+	return None
+
 # @app.route('/')
 # def root():
 #     # Store the current access time in Datastore.
@@ -52,8 +83,10 @@ def fetchspeeches():
 def addspeech():
 	json = request.get_json()
 	if json:
-		store_speech(json)
-		return jsonify(True)
+		if room_for_messages(json['user_id']):
+			store_speech(json)
+			return jsonify(True)
+		return jsonify(False)
 	else:
 		return jsonify(False)
 
@@ -136,6 +169,15 @@ def textofperson():
 					'timestamp':datetime.datetime.now().isoformat(),
 					'bear_text':'You have made a development error.'})
 
+
+@app.route('/newmessage', methods=['POST'])
+def newmessage():
+	json = request.get_json
+	if json:
+
+		store_message(json)
+		return jsonify(True)
+	return jsonify(False)
 
 
 @app.route('/ping')
