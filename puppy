@@ -5,33 +5,126 @@ import numpy as np
 
 class Database:
 
-def __init__(self):
-    self.DB = array(["what", "when", "who", "response"])
-    self.what, self.when, self.who, self.response = [], [], [], []
+  def __init__(self):
+    days = ["first", "second", "third", "forth", "fifth"]
+    self.first, self.second, self.third, self.forth, self.fifth = [], [], [], [], [], []
 
-def receive(self, file):
-    self.file = pd.read_json(file)
-    self.file = array(self.file)
+  def receive(self, timefile):
+    lists = pd.read_json(timefile)
+    self.first, self.second, self.third, self.forth, self.fifth = lists[0], lists[1], lists[2], lists[3], lists[4],
+    self.current = self.first
 
-def addglobal(self)
+  def timedens(self):
+    accum = []
+    dens = []
+    for i in range(len(self.first)):
+        temp = self.first[i]
+        accum.append(int(temp.strftime("%H")))
+    for i in range(0,23):
+      c = 0
+      if accum[i] == i:
+        c = c+1
+      dens.append(c)
+    return dens
 
-:
-    np.append(self.DB, self.file, axis=0)
-    self.what.append(self.DB[len(self.DB)][0])
-    self.when.append(self.DB[len(self.DB)][1])
-    self.who.append(self.DB[len(self.DB)][2])
-    self.response.append(self.DB[len(self.DB)][3])
+  def convnum(self,gaplength = 3):
+    timelist = []
+    timedif = []
+    for i in range(len(self.current)):
+      temp = self.current[i]
+      temphour = int(temp.strftime("%H"))
+      tempmin = int(temp.strftime("%M"))
+      tempnum = 100*temphour + tempmin
+      timelist.append(tempnum)
+    for i in range(len(timelist) - 1):
+      tempdif = timelist[i+1] - timelist[i]
+      timedif.append(tempdif)
+    for i in range(len(timedif)):
+      convno = 1
+      if timedif[i] >= gaplength:
+        convno = convno + 1
+    return convno
 
-def twilio(self):
-    for i in range(0 , len(self.what)):
-        timeStr = self.strftime("%h")
+  def weirdtimes(self):
+    intlist, timelist = [], []
+    for i in range(len(self.first)):
+      temp = self.first[i]
+      intlist.append(int(temp.strftime("%H"))
+    for i in range(len(intlist)):],
+      if intlist[i] <= 5:
+        timelist.append(intlist[i])
+    timelist = list(dict(timelist))
+    return timelist
+    
+#Either is 0 or -1
+  def avg(self, either):
+    temp = [self.first[either], self.second[either], self.third[either], self.forth[either], self.fifth[either]]
+    avg, days = 0, 5
+    for i in range(len(temp)):
+      time = temp[i]
+      inttime = int(time.strftime("%H"))
+      if inttime <= 5:
+        inttime = 0
+        days = days - 1
+      avg = avg + inttime
+    return avg/days
 
+  def weeklyconvocompare(self):
+    weekly = []
+    self.current = self.first
+    temp = self.convnum()
+    weekly.append(temp)
+    self.current = self.second
+    temp = self.convnum()
+    weekly.append(temp)
+    self.current = self.third
+    temp = self.convnum()
+    weekly.append(temp)
+    self.current = self.forth
+    temp = self.convnum()
+    weekly.append(temp)
+    self.current = self.fifth
+    temp = self.convnum()
+    weekly.append(temp)
+    self.current = self.first
+    return weekly
 
+  def analysis(self,timefile, user_name):
+    self.recieve(timefile)
+    timedens = self.timedens() #List of 24 elements, the number of convos per hour
+    weeklycon = self.weeklyconvocompare() #List of 5 elements, the number of convos per day
+    weird = self.weirdtimes() #If woken at weird times, can be an empty list
+    avgtime = [self.avg(0), self.avg(-1)] #List of 2 elements, average first chat and average last chat, over past 5 days
+    output= str("Here is your daily update for" user_name ". \n They interacted with Hacker throughout the day, this is when they liked to do so, \n 0am " timedens[0]", \n 1am" timedens[1]", \n 2am" timedens[2]", \n 3am" timedens[3]", \n 4am" timedens[4]", \n 5am" timedens[5]", \n 6am" timedens[6]", \n 7am" timedens[7]", \n 8am" timedens[8]", \n 9am" timedens[9]", \n 10am" timedens[10]", \n 11am" timedens[11]", \n 12am" timedens[12]", \n 1pm" timedens[13]", \n 2pm" timedens[14]", \n 3pm" timedens[15]", \n 4pm" timedens[16]", \n 5pm" timedens[17]", \n 6pm" timedens[18]", \n 7pm" timedens[19]", \n 8pm" timedens[20]", \n 9pm" timedens[21]", \n 10pm" timedens[22]", \n 11pm" timedens[23]". \n Over the past few days, they've)
+    if not self.second:
+      output += str("started to get to know Hacker well") 
+    else:
+      output += str("talked to Hacker quite a lot! Heres the numbers, \n Yesterday they chatted" weeklycon[0]" times, \n 2 days ago they chatted" weeklycon[1]" times, \n 
+    if len(self.third) >=1:
+      output += str("3 days ago they chatted" weeklycon[2]" times, \n 
+    if len(self.forth) >= 1:
+      output += "4 days ago they chatted" weeklycon[3]" times, \n 
+    if len(self.fifth) >= 1:
+      output += str("5 days ago they chatted" weeklycon[4]"times. \n ")
 
-    # Return how many times the person has used it, show
-    # when they use it, answer to specific questions the bear asks,
+    if not weird:
+      output += str("We are also glad to tell you that" user_name "did not talk to Hacker at any odd times! \n")
+    else:
+      output += str("Unfortunatly," user_name" woke up at" weird[0] "am last night, and chatted to Hacker. You might want to check up on them!")
+    output += str("Over the past 5 days, on average," user_name" first talks to Hacker at")
+    if avgtime[0] <= 12:
+      output += str(avgtime[0] "am")
+    else:
+      output += str(avgtime[0] "pm")
+    output += str("and their last conversion is at")
+    if avgtime[0] <= 12:
+      output += str(avgtime[1] "am.")
+    else:
+      output += str(avgtime[1] "pm.")
+    output += str("We hope you're enjoying the service, if you have any feedback please reply to this text!")
+    return output
+
 
 if __name__ == "__main__":
-    Database.receive(test.json)
-    Database.addglobal()
-    Database.twilio()
+  d = Database
+  text = d.analysis(timefile)
