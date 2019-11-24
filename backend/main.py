@@ -3,6 +3,7 @@ import datetime
 from flask import Flask, render_template, jsonify, request
 from google.cloud import datastore
 from rpi.Mitsuku import MitsukuBot
+import random
 
 app = Flask(__name__)
 
@@ -61,9 +62,51 @@ def textofperson():
     json = request.get_json()
     print(json)
     #json = {'user_id': "1", 'person_text': 'Hi there', 'timestamp': datetime.datetime.now().isoformat()}
+	badWords = {"sad","lonely","unhappy","kill","die", "leave", "depressed","death","hungry","tired","stiff","aching", "miss"}
+	sosWords = {"fallen", "hurt", "injured", "broken", "pain", "ouch", "help", "stroke", "heart", "attack"}
+	happyWords = {"happy", "excited", "nice", "sunny"}
+	needWords = {"hungry", "thirsty", "tired", "exhausted", "sleepy"}
+	songWords = {"play", "song"}
+	familyWords = {"family", "sister", "daughter", "grandson", "grandaughter"} # include actual names
+	memoryWords = {"remember", "remembered"}
+	forgetWords = {"forget", "forgotten"}
+	rand = random.randint(1,100)
+	# If 5 or less, tell them to drink water
     if json:
         try:
-            bear_text = bot.sendMessage(json["person_text"])[1:-1]
+			person_text = json["person_text"]
+			status = 0
+			for word in person_text:
+				w = word.lower()
+				if w in sosWords:
+					status = 1
+					break
+				elif w in badWords:
+					status = 2
+					break
+				elif w in needWords:
+					status = 3
+					break
+				elif w in forgetWords:
+					status = 4
+					break
+				elif w in memoryWords:
+					status = 5
+					break
+				elif w in familyWords:
+					status = 6
+					break
+				elif w in happyWords:
+					status = 7
+					break
+				elif w in songWords:
+					status = 8
+					break
+				
+			if status != 1:
+            	bear_text = bot.sendMessage(person_text)[1:-1]
+			else:
+				bear_text = "Do you want some help?"
         except:
             bear_text = "I need some sleep."
         json['bear_text'] = bear_text
