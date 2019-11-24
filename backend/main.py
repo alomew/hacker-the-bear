@@ -1,9 +1,14 @@
-import datetime
+from datetime import datetime, timedelta, date
+
+from twilio.rest import Client
+
+import os
 
 from flask import Flask, render_template, jsonify, request
 from google.cloud import datastore
 from rpi.Mitsuku import MitsukuBot
 import random
+from analysis.dbclass import Database
 from enum import Enum
 
 class DanceMove:
@@ -43,6 +48,13 @@ def fetch_speeches(limit):
 
 	return speeches
 
+def fetch_speeches_for_date(d):
+	query = datastore_client.query(kind="speech")
+	query.order = ['-timestamp']
+	query.add_filter('timestamp', '>=', datetime.combine(d, datetime.time.min))
+	query.add_filter('timestamp', '<=', datetime.combine(d, datetime.time.max))
+	return(list(query.fetch(100)))
+
 def store_message(message_json):
 	message_json['been_said'] = False
 	entity = datastore.Entity(key=datastore_client.key('message'))
@@ -50,16 +62,16 @@ def store_message(message_json):
 
 	datastore_client.put(entity)
 
-def room_for_messages(user_id):
+def fetch_messages(user_id):
 	query = datastore_client.query(kind='message')
 	query.add_filter('been_said', '=', False)
 	query.add_filter('user_id', '=', user_id)
-	num = len(list(query.fetch(10)))
-	if num == 10:
-		return False
-	else:
-		return True
+	return list(map(lambda e: e['message'], query.fetch(10)))
 
+def room_for_messages(user_id):
+	if len(fetch_messages(user_id)) == 10:
+		return False
+	return True
 
 def message_available(user_id, name):
 	query = datastore_client.query(kind='message')
@@ -114,7 +126,7 @@ def textofperson():
 	sosWords = {"fallen", "hurt", "injured", "broken", "pain", "ouch", "help", "stroke", "heart", "attack"}
 	happyWords = {"happy", "excited", "nice", "sunny"}
 	needWords = {"hungry", "thirsty", "tired", "exhausted", "sleepy"}
-	songWords = {"play", "song"}
+	songWords = {"play", "song", "sing"}
 	familyWords = {"family", "sister", "daughter", "grandson", "grandaughter"} # include actual names
 	memoryWords = {"remember", "remembered"}
 	forgetWords = {"forget", "forgotten"}
@@ -240,6 +252,14 @@ def newmessage():
 	return jsonify(False)
 
 
+@app.route('/getqueuedmessages', methods=['POST'])
+def getqueuedmessages():
+	user_id = request.get_json()
+	if user_id:
+		return jsonify(fetch_messages(user_id))
+	return jsonify(None)
+
+
 @app.route('/ping')
 def ping():
 	return jsonify('pong')
@@ -257,6 +277,33 @@ def dance():
 	danceMove.setDance(DanceMove.NOTHING)
 	
 	return jsonify(response)
+
+
+@app.route('/dailytextfakefakefake')
+def sendsms():
+	oneday = timedelta(days=1)
+	timedata = [[e['timestamp'] for e in fetch_speeches_for_date(date.today() - i*oneday)] for i in range(5)]
+	moodtoday = [e['mood_value'] for e in fetch_speeches_for_date(date.today())]
+	db = Database()
+
+	long, short = db.analysis(timedata, "Alice", moodtoday)
+
+
+
+	account_sid = os.environ['TWILIO_SID']
+	auth_token = os.environ['TWILIO_AUTH_TOKEN']
+	client = Client(account_sid, auth_token)
+
+	message = client.messages \
+		.create(
+		body="Test environment variables",
+		from_='+12054330045',
+		to='+447730692762'
+	)
+
+	print(message.sid)
+
+
 
 
 if __name__ == '__main__':

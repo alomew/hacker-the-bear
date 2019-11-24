@@ -11,3 +11,7 @@ handlers:
     # the entire handlers section) when there are no static files defined.
   - url: /.*
     script: auto
+
+env_variables:
+  TWILIO_SID: AC5d26be65721eed58093a64cd9eb17697
+  TWILIO_AUTH_TOKEN: 24e659e69f44fd35849cf7bca7d83f9e
