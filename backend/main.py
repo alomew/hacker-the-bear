@@ -1,9 +1,10 @@
-import datetime
+from datetime import datetime, timedelta, date
 
 from flask import Flask, render_template, jsonify, request
 from google.cloud import datastore
 from rpi.Mitsuku import MitsukuBot
 import random
+from analysis.dbclass import Database
 from enum import Enum
 
 class DanceMove:
@@ -14,7 +15,7 @@ class DanceMove:
 	WAVE = 2
 	CUDDLE = 3
 
-	DANCE_MOVE = WAVE
+	DANCE_MOVE = NOTHING
 	def setDance(self, move):
 		self.DANCE_MOVE = move
 
@@ -43,6 +44,13 @@ def fetch_speeches(limit):
 
 	return speeches
 
+def fetch_speeches_for_date(d):
+	query = datastore_client.query(kind="speech")
+	query.order = ['-timestamp']
+	query.add_filter('timestamp', '>=', datetime.combine(d, datetime.time.min))
+	query.add_filter('timestamp', '<=', datetime.combine(d, datetime.time.max))
+	return(list(query.fetch(100)))
+
 def store_message(message_json):
 	message_json['been_said'] = False
 	entity = datastore.Entity(key=datastore_client.key('message'))
@@ -50,16 +58,16 @@ def store_message(message_json):
 
 	datastore_client.put(entity)
 
-def room_for_messages(user_id):
+def fetch_messages(user_id):
 	query = datastore_client.query(kind='message')
 	query.add_filter('been_said', '=', False)
 	query.add_filter('user_id', '=', user_id)
-	num = len(list(query.fetch(10)))
-	if num == 10:
-		return False
-	else:
-		return True
+	return list(map(lambda e: e['message'], query.fetch(10)))
 
+def room_for_messages(user_id):
+	if len(fetch_messages(user_id)) == 10:
+		return False
+	return True
 
 def message_available(user_id, name):
 	query = datastore_client.query(kind='message')
@@ -114,7 +122,7 @@ def textofperson():
 	sosWords = {"fallen", "hurt", "injured", "broken", "pain", "ouch", "help", "stroke", "heart", "attack"}
 	happyWords = {"happy", "excited", "nice", "sunny"}
 	needWords = {"hungry", "thirsty", "tired", "exhausted", "sleepy"}
-	songWords = {"play", "song"}
+	songWords = {"play", "song", "sing"}
 	familyWords = {"family", "sister", "daughter", "grandson", "grandaughter"} # include actual names
 	memoryWords = {"remember", "remembered"}
 	forgetWords = {"forget", "forgotten"}
@@ -198,22 +206,31 @@ def textofperson():
 			done = False
 			howAreYou = {"how are you", "how are you doing", "how are you feeling", "you okay"}
 			whatAreYouDoing = {"what are you doing", "what are you up to", "what you doing", "up to much"}
+			whereAreYou = {"where are you from", "where you from", "where are you at", "where you at", "where are you"}
+			howOld = {"how old are you", "what's your age", "whats your age", "how old"}
+			
 			if boot:
 				bots = {"I'm simply a husky, Hacker the husky!", "Look at me, I'm a dog!", "Last time I checked, I was indeed a dog!"}
 				bear_text = random.sample(bots,1)[0]
 				done = True
-			for val in howAreYou:
-				if val in bear_text:
-					okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?", "I'm alright actually. Are you okay?", "Doing well, you?"}
-					bear_text = random.sample(okThanks,1)[0]
-					done = True
-					break
-			for val in whatAreYouDoing:
-				if val in bear_text:
-					stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", "Just chilling, you?"}
-					bear_text = random.sample(stuff,1)[0]
-					done = True
-					break
+				for val in howAreYou:
+					if val in person_text.lower():
+						okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?", "I'm alright actually. Are you okay?", "Doing well, you?"}
+						bear_text = random.sample(okThanks,1)[0]
+						done = True
+						break
+				for val in whatAreYouDoing:
+					if val in person_text.lower():
+						stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", "Just chilling, you?"}
+						bear_text = random.sample(stuff,1)[0]
+						done = True
+						break
+				for val in whereAreYou:
+					if val in person_text.lower():
+						stuff = {"I've always have been and always will be just here, here with you", "I'll always be by your side", "Just by your side, exactly where I want to be"}
+						bear_text = random.sample(stuff,1)[0]
+						done = True
+						break
 			if not done:
 				bear_text = bot.sendMessage(person_text)[1:-1]
 
@@ -240,25 +257,20 @@ def newmessage():
 	return jsonify(False)
 
 
+@app.route('/getqueuedmessages', methods=['POST'])
+def getqueuedmessages():
+	user_id = request.get_json()
+	if user_id:
+		return jsonify(fetch_messages(user_id))
+	return jsonify(None)
+
+
 @app.route('/ping')
 def ping():
 	return jsonify('pong')
 
-@app.route('/dance')
-def dance():
-	danceMove.setDance(DanceMove.DANCE)
-	return jsonify('done!')
-@app.route('/wave')
-def wave():
-	danceMove.setDance(DanceMove.WAVE)
-	return jsonify('done!')
-@app.route('/cuddle')
-def cuddle():
-	danceMove.setDance(DanceMove.CUDDLE)
-	return jsonify('done!')
-
 @app.route('/DanceMove')
-def getDance():
+def dance():
 	response = "Nothing"
 	if danceMove.DANCE_MOVE == DanceMove.DANCE:
 		response = "Dance"
@@ -292,5 +304,5 @@ if __name__ == '__main__':
 	# App Engine itself will serve those files as configured in app.yaml.
 	global dancemove
 	dancemove = DanceMove.NOTHING
-	app.run(host='0.0.0.0', port=8080, debug=True)
+	app.run(host='127.0.0.1', port=8080, debug=True)
 	
