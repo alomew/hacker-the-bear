@@ -2,7 +2,7 @@ import requests; # requests library to make REST calls
 import json
 
 
-class mitsukuBot():
+class MitsukuBot():
 
     def __init__(self):
         self.url = "https://miapi.pandorabots.com/talk"
