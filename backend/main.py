@@ -70,6 +70,14 @@ def textofperson():
 	familyWords = {"family", "sister", "daughter", "grandson", "grandaughter"} # include actual names
 	memoryWords = {"remember", "remembered"}
 	forgetWords = {"forget", "forgotten"}
+
+
+	memoryRes = {"I'm so glad you remember that","That sounds good, would you like to talk more about it?","Do you remember anything else about the situation"}
+	familyRes = {"That's interesting, tell me more!", "That's great, it's great that you remember", "Oh really?"}
+	happyRes = {"That's awesome! I'm glad", "Yippeee!", "Yay!"}
+	songRes = "" # Songs will play
+	byeRes = {"I need some sleep", "I'm tired", "I ought to go, have a wonderful day!", "Goodnight"}
+	drinkRes = {"Hey, make sure you've been drinking enough.", "Have you been drinking? It's been a while", "Make sure you have a glass of water!"}
 	rand = random.randint(1,100)
 	# If 5 or less, tell them to drink water
 	if json:
@@ -108,7 +116,9 @@ def textofperson():
 			else:
 				bear_text = "Do you want some help?"
 		except:
-			bear_text = "I need some sleep."
+			bear_text = random.sample(byeRes,1)[0]
+		if rand < 5:
+			bear_text += ". " + random.sample(drinkRes,1)[0]
 		json['bear_text'] = bear_text
 		return jsonify(json)
 
