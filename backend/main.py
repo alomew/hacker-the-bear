@@ -272,6 +272,16 @@ def getDance():
 	return jsonify(response)
 
 
+@app.route('/dailytextfakefakefake')
+def sendsms():
+	oneday = timedelta(days=1)
+	timedata = [[e['timestamp'] for e in fetch_speeches_for_date(date.today() - i*oneday)] for i in range(5)]
+	moodtoday = [e['mood_value'] for e in fetch_speeches_for_date(date.today())]
+	db = Database()
+
+	long, short = db.analysis(timedata, "Alice", moodtoday)
+
+
 if __name__ == '__main__':
 	# This is used when running locally only. When deploying to Google App
 	# Engine, a webserver process such as Gunicorn will serve the app. This
