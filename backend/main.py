@@ -34,8 +34,6 @@ datastore_client = datastore.Client()
 
 def store_speech(speech_json):
 	entity = datastore.Entity(key=datastore_client.key('speech'))
-	dt = datetime.datetime.now()
-	speech_json['timestamp'] = dt
 	entity.update(speech_json)
 
 	datastore_client.put(entity)
@@ -86,6 +84,12 @@ def message_available(user_id, name):
 		datastore_client.put(entity)
 		return entity['message_text']
 	return None
+
+def store_summary(user_id, summary):
+	entity = datastore.Entity(key=datastore_client.key('summary'))
+	entity.update({user_id: user_id, summary: summary})
+
+	datastore_client.put(entity)
 
 # @app.route('/')
 # def root():
@@ -244,12 +248,15 @@ def textofperson():
 			bear_text += ". " + random.sample(drinkRes,1)[0]
 
 		json['bear_text'] = bear_text
+		json['mood_value'] = str(status)
+		store_speech(json)
 		return jsonify(json)
 
 	return jsonify({'user_id': '1',
 					'person_text':'',
 					'timestamp':datetime.datetime.now().isoformat(),
-					'bear_text':'You have made a development error.'})
+					'bear_text':'You have made a development error.',
+					'mood_value':'0'})
 
 
 @app.route('/newmessage', methods=['POST'])
@@ -318,7 +325,7 @@ def sendsms():
 
 	message = client.messages \
 		.create(
-		body="Test environment variables",
+		body=short,
 		from_='+12054330045',
 		to='+447730692762'
 	)
