@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (alignTop, centerX, centerY, column, el, height, padding, row, shrink, spacing, width)
+import Element exposing (alignTop, centerX, centerY, column, el, fill, height, padding, row, shrink, spacing, width)
 import Element.Font
 import Element.Input exposing (labelAbove, labelHidden, labelLeft)
 import Html exposing (Html)
@@ -109,7 +109,7 @@ view : Model -> Html Msg
 view model =
     Element.layout
         [ Element.Font.size 30 ]
-        (row [ centerX, centerY, height shrink ]
+        (row [ centerX, centerY, height shrink, width fill ]
             [ column [ centerX, width shrink, spacing 15, alignTop ]
                 [ el [ Element.Font.size 40, centerX, width shrink ] (Element.text "Messages so far")
                 , case model.queuedMessages of

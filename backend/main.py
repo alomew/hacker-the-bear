@@ -102,7 +102,7 @@ def set_dancemove(user_id, move):
     if move in {"Nothing", "Dance", "Wave", "Cuddle", "Neutral"}:
         query = datastore_client.query(kind='dance')
         query.add_filter('user_id', '=', user_id)
-        poss_ents = query.fetch(1)
+        poss_ents = list(query.fetch(1))
         if poss_ents:
             e = poss_ents[0]
             e['dance'] = move
