@@ -110,17 +110,6 @@ def root():
 def fetchspeeches():
 	return jsonify(list(fetch_speeches(10)))
 
-@app.route('/addspeech', methods=['POST'])
-def addspeech():
-	json = request.get_json()
-	if json:
-		if room_for_messages(json['user_id']):
-			store_speech(json)
-			return jsonify(True)
-		return jsonify(False)
-	else:
-		return jsonify(False)
-
 @app.route('/textofperson', methods=['POST'])
 def textofperson():
 	json = request.get_json()
