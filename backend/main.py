@@ -19,7 +19,7 @@ class DanceMove:
 	WAVE = 2
 	CUDDLE = 3
 
-	DANCE_MOVE = NOTHING
+	DANCE_MOVE = WAVE
 	def setDance(self, move):
 		self.DANCE_MOVE = move
 
@@ -210,22 +210,31 @@ def textofperson():
 			done = False
 			howAreYou = {"how are you", "how are you doing", "how are you feeling", "you okay"}
 			whatAreYouDoing = {"what are you doing", "what are you up to", "what you doing", "up to much"}
+			whereAreYou = {"where are you from", "where you from", "where are you at", "where you at", "where are you"}
+			howOld = {"how old are you", "what's your age", "whats your age", "how old"}
+			
 			if boot:
 				bots = {"I'm simply a husky, Hacker the husky!", "Look at me, I'm a dog!", "Last time I checked, I was indeed a dog!"}
 				bear_text = random.sample(bots,1)[0]
 				done = True
-			for val in howAreYou:
-				if val in bear_text:
-					okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?", "I'm alright actually. Are you okay?", "Doing well, you?"}
-					bear_text = random.sample(okThanks,1)[0]
-					done = True
-					break
-			for val in whatAreYouDoing:
-				if val in bear_text:
-					stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", "Just chilling, you?"}
-					bear_text = random.sample(stuff,1)[0]
-					done = True
-					break
+				for val in howAreYou:
+					if val in person_text.lower():
+						okThanks = {"I'm good thank you! How are you?", "I'm pretty great, what about you?", "I'm alright actually. Are you okay?", "Doing well, you?"}
+						bear_text = random.sample(okThanks,1)[0]
+						done = True
+						break
+				for val in whatAreYouDoing:
+					if val in person_text.lower():
+						stuff = {"Talking to you, of course!", "Just enjoying my time, talking to you, what about you?", "Just chilling, you?"}
+						bear_text = random.sample(stuff,1)[0]
+						done = True
+						break
+				for val in whereAreYou:
+					if val in person_text.lower():
+						stuff = {"I've always have been and always will be just here, here with you", "I'll always be by your side", "Just by your side, exactly where I want to be"}
+						bear_text = random.sample(stuff,1)[0]
+						done = True
+						break
 			if not done:
 				bear_text = bot.sendMessage(person_text)[1:-1]
 
@@ -264,8 +273,21 @@ def getqueuedmessages():
 def ping():
 	return jsonify('pong')
 
-@app.route('/DanceMove')
+@app.route('/dance')
 def dance():
+	danceMove.setDance(DanceMove.DANCE)
+	return jsonify('done!')
+@app.route('/wave')
+def wave():
+	danceMove.setDance(DanceMove.WAVE)
+	return jsonify('done!')
+@app.route('/cuddle')
+def cuddle():
+	danceMove.setDance(DanceMove.CUDDLE)
+	return jsonify('done!')
+
+@app.route('/DanceMove')
+def getDance():
 	response = "Nothing"
 	if danceMove.DANCE_MOVE == DanceMove.DANCE:
 		response = "Dance"
