@@ -109,7 +109,7 @@ def set_dancemove(user_id, move):
             datastore_client.put(e)
         else:
             entity = datastore.Entity(key=datastore_client.key("dance"))
-            entity.update({user_id: user_id, move: move})
+            entity.update({'user_id': user_id, 'move': move})
             datastore_client.put(entity)
         return jsonify("Changed move")
     return jsonify("That's not a real move")
@@ -218,6 +218,7 @@ def textofperson():
             familyRes = {"That's interesting, tell me more!", "That's great, it's great that you remember",
                          "Oh really?"}
             poss_msg = message_available(json['user_id'])
+            set_dancemove('1', 'Neutral')
             if poss_msg:
                 bear_text = poss_msg
             else:
@@ -230,6 +231,8 @@ def textofperson():
         elif status == 8:
             songRes = ""  # Songs will play
             bear_text = "Dance time!"
+            set_dancemove('1', 'Dance')
+
 
         else:
             done = False
@@ -249,6 +252,7 @@ def textofperson():
                                     "I'm alright actually. Are you okay?", "Doing well, you?"}
                         bear_text = random.sample(okThanks, 1)[0]
                         done = True
+                        set_dancemove('wave')
                         break
                 for val in whatAreYouDoing:
                     if val in person_text.lower():
