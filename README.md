@@ -1,4 +1,4 @@
-Hacker the Husky
+# Hacker the Husky
 
 By Alex, Alfi, Mathew, Ross and Tom
 
@@ -12,10 +12,10 @@ Our idea is to create a communication-focused companion to combat loneliness in 
 
 The device should follow some fundamental aims:
 
-    • It should be easy to use
-    • It should be follow some basic word triggers to execute commands and respond with one of a list of phrases.
-    • It should detect a cry for help, to trigger a correspondence between the user and a family member / emergency services
-    • Give reassurance to family members that their loved one can find comfort with this assistive technology
+- It should be easy to use
+- It should be follow some basic word triggers to execute commands and respond with one of a list of phrases.
+- It should detect a cry for help, to trigger a correspondence between the user and a family member / emergency services
+- Give reassurance to family members that their loved one can find comfort with this assistive technology
 
 ## How we achieved this
 
@@ -23,18 +23,18 @@ Alex and Matt resourced a cuddly puppy toy from a local charity shop. Matt and R
 
 Eventually, the device should address the aims via the following:
 
-    • Being a verbal diary and conversationalist
-    • Detecting when user says trigger word (“sad”, “lonely”, “depressed”, etc.) and prompts user to decide whether they want the bot to contact family members
-    • Encouraging user to recount more details of anecdotes, etc.
-    • Dancing every now and then
-    • 5% chance of reminding user to drink more water
+- Being a verbal diary and conversationalist
+- Detecting when user says trigger word (“sad”, “lonely”, “depressed”, etc.) and prompts user to decide whether they want the bot to contact family members
+- Encouraging user to recount more details of anecdotes, etc.
+- Dancing every now and then
+- 5% chance of reminding user to drink more water
 
 ## Technologies used
 
-    • Twilio: To send SMS messages to family members, including daily updates. These updates are short, but will contain a link to further information hosted on the website that will show how many times the user has interacted with the toy, outlier times, and average mood based off a score that the bot assigns the user each day
-    • Google Cloud Platform: The server and database are held in the cloud
-    • Google’s Text-To-Speech API: Used in the hard-coding of the bot
-    • Domain.com: Got the domain for the website here
+- Twilio: To send SMS messages to family members, including daily updates. These updates are short, but will contain a link to further information hosted on the website that will show how many times the user has interacted with the toy, outlier times, and average mood based off a score that the bot assigns the user each day
+- Google Cloud Platform: The server and database are held in the cloud
+- Google’s Text-To-Speech API: Used in the hard-coding of the bot
+- Domain.com: Got the domain for the website here
 
 ## Challenges we ran into
 
